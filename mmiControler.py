@@ -17,23 +17,49 @@ from astropy.visualization import (MinMaxInterval, SqrtStretch,AsinhStretch,LogS
 class cmmiPocess:
     MAX=65535
     def __init__(self,imageFile):
+        """
+        Controler of web MMI
+
+        Parameters
+        ----------
+        imageFile : String, path to initial iamge
+
+        Returns
+        -------
+        None.
+
+        """
+        #original image array
         self.imageData=None
+        
+        #stretched image array
         self.displayImageData=None
         
+        #image path+filename
         self.imageFile=imageFile
+        
+        #image last modification date
         self.lastModified=None
-        self.low=0
-        self.high=100
+        
+        #set original or stretched image
         self.displayOriginal=True
+        
+        #flag to know if initial image is loaded
         self.isInit=False
+        
+        #log stretch factor
         self.a=10000
 
-
-    def startDark(self,num):
-        if not self.startDarkCb is None:
-            self.startDarkCb(num)
   
     def checkFileUpdate(self):
+        """
+        Check if image file has been updated
+
+        Returns
+        -------
+        bool.
+
+        """
         fileDate=os.path.getmtime(self.imageFile)
         if not self.isInit:
             self.readFile()
@@ -48,6 +74,15 @@ class cmmiPocess:
             return True
 
     def logStretch(self):
+        """
+        logarithm stretching of image
+        Log paramameter is a class property
+
+        Returns
+        -------
+        normImage : stretched image array
+
+        """
     
         if self.imageData is None:
             return None
@@ -63,6 +98,16 @@ class cmmiPocess:
         return normImage
 
     def readFile(self):
+        """
+        Read image from file and stretch it 
+
+        Returns
+        -------
+            Type : image array
+            either original image or stretched image depending on 
+            dislayOriginal Boolean class property
+
+        """
         
         self.imageData = cv2.imread(self.imageFile,-1)
         scale_percent = 50 # percent of original size
@@ -83,6 +128,17 @@ class cmmiPocess:
         
     
     def getImageData(self):
+        """
+        return image array according to display parameter
+        if image is not loaded, function load it from file
+
+        Returns
+        -------
+            Type : image array
+            either original image or stretched image depending on 
+            dislayOriginal Boolean class property
+
+        """
         if not self.isInit:
             self.readFile()
             self.isInit=True
@@ -95,12 +151,34 @@ class cmmiPocess:
             print("stretched")
             return self.displayImageData
 
-
+        TYPE
+            DESCRIPTION.
     def adjustStretch(self,a):
+        """
+        Set stretch factor and update accordingly stretched image
+
+        Parameters
+        ----------
+        a : float
+            range ]0;10000]
+            Returns
+        -------
+        None.
+
+        """
         self.a=a
         self.displayImageData=self.logStretch()
 
     def serialize(self):
+        """
+        Store class property in a string
+        used to check sync of MMI with controller
+        Returns
+        -------
+        string
+            class parameters
+
+        """
         ser={
             "displayOriginal":self.displayOriginal,
             "a":self.a

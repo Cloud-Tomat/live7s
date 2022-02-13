@@ -41,16 +41,45 @@ print ("dependencies loaded")
 
 class webInteract():
     def __init__(self,controler,callBacks):
+        """
+        Call dedicated to interaction with MMI web page
+        Parameters
+        ----------
+        controler : controller class
+        callBacks : list of functions
+            [
+                darkCallBack -> 1 arg = number of dark,
+                CaptureCallBack -> 1 arg = number of image,
+                TestCallBack -> No arg,
+            ]
+        some list element can be set to None if no callback wanted
+        Returns
+        -------
+        None.
+
+        """
+        #---------------------------------------
+        #configure the server to work with DASH
+        #---------------------------------------
         self.server = Flask(__name__, static_url_path='')
         self.socket = SocketIO(self.server, async_mode='eventlet')
-        self.app = dash.Dash(__name__, server=self.server,external_stylesheets=[dbc.themes.BOOTSTRAP])
+        self.app = dash.Dash(__name__, server=self.server,
+                             external_stylesheets=[dbc.themes.BOOTSTRAP])
 
         self.app.scripts.config.serve_locally = True
         self.app.css.config.serve_locally = True
         self.app.layout =layout.layout
-        self.mmiProcess=controler
         
+        
+        #---------------------------------------
+        #initialize controller
+        #---------------------------------------
+        self.mmiProcess=controler
         self.mmiProcess.readFile()
+        
+        #---------------------------------------
+        #initialize callbacks
+        #---------------------------------------
         self.app.callback(
             Output('trigger2','children'),
             Input('stretchSlider', 'value'))(self.adjustStretch)
@@ -89,6 +118,14 @@ class webInteract():
 
 
     def runServer(self):
+        """
+        Run the webserver
+
+        Returns
+        -------
+        None.
+
+        """
         print("starting Server")
         self.socket.run(self.server, debug=False, port=5000, host='0.0.0.0')
         
@@ -97,13 +134,49 @@ class webInteract():
     #----------------------------------------------------------
     
     def printStatus(self,status):
+        """
+        Display Status on web page
+
+        Parameters
+        ----------
+        status : string
+        Returns
+        -------
+        None.
+
+        """
         self.change("Status", {'value':status})
 
     
     def printLog(self,log):
+        """
+        Display log on web page
+
+        Parameters
+        ----------
+        log : String
+
+        Returns
+        -------
+        None.
+
+        """
         self.change("log", {'value':log})
 
     def displayNewFile(self,file):
+        """
+        Display New file
+
+        Parameters
+        ----------
+        file : TYPE String
+            DESCRIPTION. Path to File to display
+
+        Returns
+        -------
+        None.
+
+        """
         mmiProcess.imageFile=file
         if self.mmiProcess.checkFileUpdate():
             self.change('trigger1', {'children': str(randint(0, 10000))})
@@ -204,12 +277,37 @@ class webInteract():
 
 
     def change(self,id, val):
-    	self.socket.emit('call', {'id': id, 'val': val})
+        """
+        Push update to web page from python
+
+        Parameters
+        ----------
+        id : String, id of item to update
+        val : String, value of item to update
+        Returns
+        -------
+        None.
+
+        """
+        self.socket.emit('call', {'id': id, 'val': val})
     
     
-    def figureUpdate(self,imageData):    #,status):
+    def figureUpdate(self,imageData):  
+        """
+        Return a new figure with image updated
+        Keep zoom level
+
+        Parameters
+        ----------
+        imageData : numpy array, 
+
+        Returns
+        -------
+        fig : plotly figure to be returned by callbacks
+        """
         
-        fig = px.imshow(imageData, binary_string=True, binary_backend="jpg",binary_compression_level=5,)
+        fig = px.imshow(imageData, binary_string=True, binary_backend="jpg",
+                        binary_compression_level=5,)
         #preserve zoom after update
         # fig["data"][0]["name"]=status
         fig['layout']['uirevision'] = 'some-constant'
