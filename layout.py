@@ -12,7 +12,11 @@ import dash_daq as daq
 from dash import html,dcc
 import sockettest
 
-# app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+# app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP]
+
+#-----------------------------------------------------
+#--------------------- side panel --------------------
+#-----------------------------------------------------
 controls = dbc.Card(
     [
         html.Div(
@@ -50,8 +54,13 @@ controls = dbc.Card(
     body=True,
 )
 
+
+#-----------------------------------------------------
+#--------------------- right view --------------------
+#-----------------------------------------------------
+
 graph=(
-       html.P(id='status'),
+       html.P(id='status'),     #Storage of image status / 
        dbc.Row(dcc.Graph(id="liveImg")),
        dbc.Row((
            dbc.Col(dbc.Label("Histogram",style={"margin-top": "15px","margin-bottom": "15px"}),md=1),
@@ -63,11 +72,14 @@ graph=(
        
        dbc.Row(dcc.Slider(id="stretchSlider", min=0, max=20000,value=10000)),)
 
+#-----------------------------------------------------
+#--------------------- Full layout --------------------
+#-----------------------------------------------------
+
 layout = dbc.Container(
     [
-        
-        html.P(id='fakeOutput1',hidden=True),
-        html.P(id='fakeOutput2',hidden=True),
+        html.P(id='trigger1',hidden=True),  #trick to cascade  callback 
+        html.P(id='trigger2',hidden=True),  #trick to cascade  callback 
         html.P(id='stretch'),
         html.H1("Sony A7S Live Stacker"),
         html.Hr(),

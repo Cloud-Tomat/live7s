@@ -6,10 +6,13 @@ Created on Sat Feb 12 09:17:53 2022
 @author: nicolas
 """
 
-import collections
+
 import cv2
 import os
 from astropy.visualization import (MinMaxInterval, SqrtStretch,AsinhStretch,LogStretch,ImageNormalize)
+
+
+
 
 class cmmiPocess:
     MAX=65535
@@ -24,9 +27,12 @@ class cmmiPocess:
         self.displayOriginal=True
         self.isInit=False
         self.a=10000
-        self.log=collections.deque(10*[""])
-        
-        
+
+
+    def startDark(self,num):
+        if not self.startDarkCb is None:
+            self.startDarkCb(num)
+  
     def checkFileUpdate(self):
         fileDate=os.path.getmtime(self.imageFile)
         if not self.isInit:
@@ -50,7 +56,7 @@ class cmmiPocess:
         interval = MinMaxInterval()
         vmin, vmax = interval.get_limits(self.imageData)
         
-        # Create an ImageNormalize object using a SqrtStretch object
+        # Create an ImageNormalize object using a logStrertch object
         norm = ImageNormalize(vmin=vmin, vmax=vmax, stretch=LogStretch(self.a))
         normImage=norm(self.imageData)
     
@@ -100,9 +106,3 @@ class cmmiPocess:
             "a":self.a
             }
         return str(ser)
-    
-    def pushToLog(self,log):
-        self.log.appendleft(log)
-        
-    def logToString(self):
-        return "\n".join(self.log)
