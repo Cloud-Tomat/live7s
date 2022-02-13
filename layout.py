@@ -12,7 +12,6 @@ import dash_daq as daq
 from dash import html,dcc
 import sockettest
 
-# app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP]
 
 #-----------------------------------------------------
 #--------------------- side panel --------------------
@@ -37,7 +36,7 @@ controls = dbc.Card(
         html.Div(
             [
                 dbc.Row(dbc.Label("Status\n")),
-                dbc.Row(dbc.Label("-",id="Status",style={"border":"1px lightgray solid"})),
+                dbc.Row(dbc.Input(placeholder="-",id="Status",disabled=True,style={"border":"1px lightgray solid"})),
                 dbc.Row(dbc.Button("Test",id="Test",style={"margin-top": "15px","margin-bottom": "15px"})),
             ]
         
@@ -56,7 +55,7 @@ controls = dbc.Card(
 
 
 #-----------------------------------------------------
-#--------------------- right view --------------------
+#--------------------- main view --------------------
 #-----------------------------------------------------
 
 graph=(

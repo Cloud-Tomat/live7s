@@ -77,7 +77,7 @@ class webInteract():
         self.app.callback(
                     Output('runCapture','value'),
                     Input('runCapture', 'n_clicks'),
-                    State('DarkNb','value')
+                    State('ImgNb','value')
                 )(self.startCapture)
         
         self.app.callback(
@@ -92,7 +92,24 @@ class webInteract():
         print("starting Server")
         self.socket.run(self.server, debug=False, port=5000, host='0.0.0.0')
         
-        
+    #----------------------------------------------------------
+    #---------------- Action on Web Page--------------------------------
+    #----------------------------------------------------------
+    
+    def printStatus(self,status):
+        self.change("Status", {'value':status})
+
+    
+    def printLog(self,log):
+        self.change("log", {'value':log})
+
+    def displayNewFile(self,file):
+        mmiProcess.imageFile=file
+        if self.mmiProcess.checkFileUpdate():
+            self.change('trigger1', {'children': str(randint(0, 10000))})
+            print("FileUpdate")
+        pass
+
     #----------------------------------------------------------
     #---------------- CALL BACK--------------------------------
     #----------------------------------------------------------
@@ -119,7 +136,6 @@ class webInteract():
         
         #check if Status has been updated    
         if statusIn:
-            # status=str(figIn["data"][0]["name"])
             status=statusIn
             if status!=mmiProcess.serialize():
                 print("Update display parameters")
@@ -165,7 +181,7 @@ class webInteract():
                 if not self.callBacks[1] is None:
                     self.callBacks[1](nCap)
                 else:
-                    print("no Dark callBack defined")
+                    print("no Capture callBack defined")
             else:
                 print("Number of image not defined")
             return dash.no_update
@@ -174,8 +190,8 @@ class webInteract():
         print("start Test Callback")
         print(callback_context.triggered[0])
         if callback_context.triggered[0]['prop_id']=='Test.n_clicks':
-            if not self.callBacks[0] is None:
-                self.callBacks[0]()
+            if not self.callBacks[2] is None:
+                self.callBacks[2]()
             else:
                 print("no Test callBack defined")
 
@@ -185,18 +201,6 @@ class webInteract():
     #---------------- HELPERS--------------------------------
     #----------------------------------------------------------
 
-    def displayNewFile(self,file):
-        mmiProcess.imageFile=file
-        if self.mmiProcess.checkFileUpdate():
-            self.change('trigger1', {'children': str(randint(0, 10000))})
-            print("FileUpdate")
-        pass
-    
-    def updateStatus(self,dark,capture,status):
-        pass
-    
-    def updateLog(self):
-        pass
 
 
     def change(self,id, val):
@@ -229,24 +233,58 @@ class webInteract():
         return fig
 
 if __name__ == "__main__":
+    import cv2
+    def caption(file,caption):
+        img = cv2.imread(file,-1)
+        font                   = cv2.FONT_HERSHEY_SIMPLEX
+        bottomLeftCornerOfText = (10,500)
+        fontScale              = 1
+        fontColor              = (0,0,255)
+        thickness              = 1
+        lineType               = 2
+        
+        cv2.putText(img,caption, 
+            bottomLeftCornerOfText, 
+            font, 
+            fontScale,
+            fontColor,
+            thickness,
+            lineType)
+
+        
+        #Save image
+        cv2.imwrite(caption+".jpg", img)
+        
+
+    
+    
     def timerCallback1():
-        global mmiProcess,logger
-        Timer(1.0, timerCallback1).start()
-        if mmiProcess.checkFileUpdate():
-            # change('trigger1', {'children': str(randint(0, 10000))})
-            print("FileUpdate")
+        global web,imageFile
+        Timer(5.0, timerCallback1).start()
+        id=str(randint(0, 10000))
+        print(id)
+        web.printLog(id)
+        web.printStatus(id)
+        caption(imageFile,id)
+        web.displayNewFile(id+".jpg")
     
     
     def startDark(n):
         print("starting %d darks"%n)
-    
+
+    def startCapture(n):
+        print("starting %d capture"%n)
+
+    def startTest():
+        print("starting Test")
     
     # imageFile="/mnt/data/sandbox/liveStack/cap00000/liveStack/current.tif"
     imageFile="/mnt/data/sandbox/liveStack/cap00000/liveStack/current.tif"
     logger=cLog()
     mmiProcess=cmmiPocess(imageFile)
-    web=webInteract(mmiProcess,[startDark,None,None])
-    web.runServer()
+    web=webInteract(mmiProcess,[startDark,startCapture,startTest])
     timerCallback1()
+    web.runServer()
+
 
     
